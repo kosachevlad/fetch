@@ -1,0 +1,38 @@
+{
+    "scores": {
+        "id_1": {
+            "name": "DTS1",
+            "score": 43
+        },
+        "id_2": {
+            "name": "DTS2",
+            "score": 43
+        },
+        "id_3": {
+            "name": "DTS3",
+            "score": 43
+        },
+        "id_4": {
+            "name": "DTS4",
+            "score": 43
+        },
+        "id_5": {
+            "name": "DTS5",
+            "score": 43
+        },
+        "id_6": {
+            "name": "DTS6",
+            "score": 43
+        },
+        "id_7": {
+            "name": "DTS7",
+            "score": 43
+        },
+        "id_8": {
+            "name": "DTS8",
+            "score": 43
+        }
+
+    }
+        
+}
