@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-    function initializingFirebase() {
+    let initializingFirebase = () => {
         const config = {
             apiKey: "AIzaSyAXNE7iDnkAnTZ0KjGFmp6l908TZh47x80",
             authDomain: "new-project-si.firebaseapp.com",
@@ -14,94 +14,92 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     initializingFirebase();
 
-    let database = firebase.database(),
+    const database = firebase.database(),
         form = document.getElementById("form"),
-        inputName = document.querySelectorAll(".name_input")[0],
-        scoreList = document.querySelector('.scores_list'),
-        ref = database.ref('scores'),
+        inputTaskName = document.querySelectorAll(".name_input")[0],
+        tasksList = document.querySelector('.scores_list'),
+        referingToDataBase = database.ref('tasks'),
         clearDataBtn = document.getElementById('clearBtn'),
-        data = {};
-    pushData(form);
+        tasksData = {};
+    
 
-    inputName.addEventListener('keyup', function(){
-        data.name = inputName.value
+    inputTaskName.addEventListener('keyup', () => {
+        tasksData.name = inputTaskName.value
     });
 
-    function pushData(el){
-        el.addEventListener('submit', function(e){
+    let pushData = el => {
+        el.addEventListener('submit', e => {
             e.preventDefault();
-            if (inputName.value) {
-                inputName.classList.remove('has_error');
+            if (inputTaskName.value) {
+                inputTaskName.classList.remove('has_error');
 
-                ref.push(data);
-                inputName.value = '';
+                referingToDataBase.push(tasksData);
+                inputTaskName.value = '';
             } else {
-                inputName.classList.add('has_error');
+                inputTaskName.classList.add('has_error');
             }
-            
         })
     }
+    pushData(form);
 
     // remove all data
-    clearDataBtn.addEventListener('click', function(){
-        ref.remove()
+    clearDataBtn.addEventListener('click', () => {
+        referingToDataBase.remove()
     })
 
-    ref.on('value', gotData, errData);
-    
-    function gotData(data) {
-        scoreList.textContent = '';
+    let gotData = (tasksData) => {
+        tasksList.textContent = '';
         
-        let scores = data.val();
-
-        if(scores) {
-            let keys = Object.keys(scores);
-            for (let i = 0; i < keys.length; i++) {
-                let k = keys[i],
-                    name = scores[k].name,
-                    li = document.createElement('li'),
-                    div = document.createElement('div'),
+        const taskDataList = tasksData.val();
+        if(taskDataList) {
+            let keysOfTaskDataList = Object.keys(taskDataList);
+            for (let i = 0; i < keysOfTaskDataList.length; i++) {
+            
+                let keyIndex = keysOfTaskDataList[i],
+                    taskName = taskDataList[keyIndex].name,
+                    taskItem = document.createElement('li'),
+                    taskBlock = document.createElement('div'),
                     label = document.createElement('label'),
-                    cross = document.createElement('div');
-                    cross.classList.add('delete_item');
-                    cross.textContent = 'x';
+                    deleteItem = document.createElement('div');
+                    deleteItem.classList.add('delete_item');
+                    deleteItem.textContent = 'x';
 
-                label.textContent = name;
+                label.textContent = taskName;
 
-                scoreList.appendChild(li);
-                li.appendChild(div);
-                div.appendChild(label);
-                li.classList.add('score_item');
-                li.setAttribute('data-id', keys[i]);
-                div.appendChild(cross);
+                tasksList.appendChild(taskItem);
+                taskItem.appendChild(taskBlock);
+                taskBlock.appendChild(label);
+                taskItem.classList.add('score_item');
+                taskItem.setAttribute('data-id', keyIndex);
+                taskBlock.appendChild(deleteItem);
 
                 // deleting items
-                cross.addEventListener('click', (e) => {
-                    let id = e.target.parentElement.parentElement.getAttribute('data-id');
-                    ref.child(id).remove()
+                deleteItem.addEventListener('click', event => {
+                    let taskId = event.target.parentElement.parentElement.getAttribute('data-id');
+                    referingToDataBase.child(taskId).remove()
                 })
 
-                li.addEventListener('dblclick', function(e) {
+                // editing items
+                taskItem.addEventListener('dblclick', parentEvent => {
+                    let taskId = parentEvent.target.parentElement.parentElement.getAttribute('data-id'),
+                        currentTaskItem = parentEvent.target.parentElement.parentElement,
+                        taskEdit = document.createElement('input');
 
-
-                    let id = e.target.parentElement.parentElement.getAttribute('data-id'),
-                        listItem = e.target.parentElement.parentElement;
-
-                    let inputLi = document.createElement('input');
-                    inputLi.classList.add('change_item');
-                    inputLi.setAttribute('autofocus', 'true');
-                    inputLi.value = e.target.textContent;
-                    e.target.parentElement.style.display = 'none';
-                    listItem.appendChild(inputLi);
+                    taskEdit.classList.add('change_item');
+                    taskEdit.setAttribute('autofocus', 'true');
+                    taskEdit.value = parentEvent.target.textContent;
+                    parentEvent.target.parentElement.style.display = 'none';
+                    currentTaskItem.appendChild(taskEdit);
                     
-                    inputLi.addEventListener('keydown', function(event){
-                        if(event.key === 'Enter') {
-                            event.preventDefault();
-                            e.target.parentElement.style.display = 'block';
-                            event.target.remove();
-                            ref.child(id).set({
-                                name: event.target.value
-                            }, function(error) {
+                    taskEdit.addEventListener('keydown', childEvent => {
+                        if(childEvent.key === 'Enter') {
+                            childEvent.preventDefault();
+                            parentEvent.target.parentElement.style.display = 'block';
+                            childEvent.target.remove();
+
+                            referingToDataBase.child(taskId).set({
+                                name: childEvent.target.value
+                            }, error => {
                                 if (error) {
                                     console.log('error')
                                 } else {
@@ -110,14 +108,15 @@ document.addEventListener("DOMContentLoaded", () => {
                             })
                         }
                     })
-                    document.addEventListener('click', function(ev) {
-                        // console.log(ev.target.contains(inputLi));
-                        if(ev.target !== inputLi || !ev.target.contains(inputLi)) {
-                            e.target.parentElement.style.display = 'block';
-                            inputLi.style.display = 'none';
-                            e.target.textContent = inputLi.value;
-                            ref.child(id).set({
-                                name: inputLi.value
+                    document.addEventListener('click', childEvent => {
+                        
+                        if(childEvent.target !== taskEdit || !childEvent.target.contains(taskEdit)) {
+                            parentEvent.target.parentElement.style.display = 'block';
+                            taskEdit.style.display = 'none';
+                            parentEvent.target.textContent = taskEdit.value;
+                            
+                            referingToDataBase.child(taskId).set({
+                                name: taskEdit.value
                             }, function(error) {
                                 if (error) {
                                     console.log('error')
@@ -132,25 +131,11 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function toggleInput(event, e, id, cross){
-        event.preventDefault();
-        e.target.style.display = 'block';
-        e.target.textContent = event.target.value;
-        e.target.appendChild(cross);
-        event.target.remove();
-        ref.child(id).set({
-            name: event.target.value
-        }, function(error) {
-            if (error) {
-                console.log('error')
-            } else {
-                console.log('data saved')
-            }
-        })
-    }
-
-    function errData(err) {
+    let errorData = (err) => {
         console.log('Error!');
         console.log(err);
     }
+
+    referingToDataBase.on('value', gotData, errorData);
+
 })
